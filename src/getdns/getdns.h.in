@@ -179,13 +179,15 @@ typedef enum getdns_transport_t {
 	GETDNS_TRANSPORT_UDP_FIRST_AND_FALL_BACK_TO_TCP = 540,
 	GETDNS_TRANSPORT_UDP_ONLY = 541,
 	GETDNS_TRANSPORT_TCP_ONLY = 542,
-	GETDNS_TRANSPORT_TCP_ONLY_KEEP_CONNECTIONS_OPEN = 543
+	GETDNS_TRANSPORT_TCP_ONLY_KEEP_CONNECTIONS_OPEN = 543,
+	GETDNS_TRANSPORT_HTTPS_ONLY = 546
 } getdns_transport_t;
 
 #define GETDNS_TRANSPORT_UDP_FIRST_AND_FALL_BACK_TO_TCP_TEXT "See getdns_context_set_dns_transport()"
 #define GETDNS_TRANSPORT_UDP_ONLY_TEXT "See getdns_context_set_dns_transport()"
 #define GETDNS_TRANSPORT_TCP_ONLY_TEXT "See getdns_context_set_dns_transport()"
 #define GETDNS_TRANSPORT_TCP_ONLY_KEEP_CONNECTIONS_OPEN_TEXT "See getdns_context_set_dns_transport()"
+#define GETDNS_TRANSPORT_HTTPS_ONLY_TEXT "See getdns_context_set_dns_transport()"
 /** @}
 */
 
@@ -199,12 +201,14 @@ typedef enum getdns_transport_list_t {
 	GETDNS_TRANSPORT_UDP = 1200,
 	GETDNS_TRANSPORT_TCP = 1201,
 	GETDNS_TRANSPORT_TLS = 1202,
+	GETDNS_TRANSPORT_HTTPS = 1203,
 } getdns_transport_list_t;
 
 
 #define GETDNS_TRANSPORT_UDP_TEXT "See getdns_context_set_dns_transport_list()"
 #define GETDNS_TRANSPORT_TCP_TEXT "See getdns_context_set_dns_transport_list()"
 #define GETDNS_TRANSPORT_TLS_TEXT "See getdns_context_set_dns_transport_list()"
+#define GETDNS_TRANSPORT_HTTPS_TEXT "See getdns_context_set_dns_transport_list()"
 /** @}
  */
 
@@ -1485,7 +1489,7 @@ getdns_context_set_dns_transport(getdns_context *context,
  *                   basic resolution will fail. Fallback transport options are
  *                   specified by including multiple values in the list.
  *                   The values are: GETDNS_TRANSPORT_UDP, GETDNS_TRANSPORT_TCP,
- *                   or GETDNS_TRANSPORT_TLS
+ *                   GETDNS_TRANSPORT_TLS or GETDNS_TRANSPORT_HTTPS
  * @return GETDNS_RETURN_GOOD when successful
  * @return GETDNS_RETURN_CONTEXT_UPDATE_FAIL with unknown values
  * @return GETDNS_RETURN_INVALID_PARAMETER when context was NULL.

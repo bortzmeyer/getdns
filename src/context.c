@@ -97,9 +97,11 @@ typedef unsigned short in_port_t;
 #define GETDNS_PORT_ZERO 0
 #define GETDNS_PORT_DNS 53
 #define GETDNS_PORT_DNS_OVER_TLS 853
+#define GETDNS_PORT_HTTPS 443
 #define GETDNS_STR_PORT_ZERO "0"
 #define GETDNS_STR_PORT_DNS "53"
 #define GETDNS_STR_PORT_DNS_OVER_TLS "853"
+#define GETDNS_STR_PORT_HTTPS "433"
 
 #ifdef HAVE_PTHREAD
 static pthread_mutex_t ssl_init_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -132,18 +134,21 @@ static getdns_transport_list_t
 getdns_upstream_transports[GETDNS_UPSTREAM_TRANSPORTS] = {
 	GETDNS_TRANSPORT_TCP,
 	GETDNS_TRANSPORT_TLS,
+	GETDNS_TRANSPORT_HTTPS
 };
 
 static in_port_t 
 getdns_port_array[GETDNS_UPSTREAM_TRANSPORTS] = {
 	GETDNS_PORT_DNS,
-	GETDNS_PORT_DNS_OVER_TLS
+	GETDNS_PORT_DNS_OVER_TLS,
+	GETDNS_PORT_HTTPS
 };
 
 static char*
 getdns_port_str_array[] = {
 	GETDNS_STR_PORT_DNS,
-	GETDNS_STR_PORT_DNS_OVER_TLS
+	GETDNS_STR_PORT_DNS_OVER_TLS,
+	GETDNS_STR_PORT_HTTPS
 };
 
 static const uint8_t no_suffixes[] = { 1, 0 };
@@ -2228,6 +2233,14 @@ set_ub_dns_transport(struct getdns_context* context) {
                 /* Use TLS if it is the only thing.*/
                 set_ub_string_opt(context, "ssl-upstream:", "yes");
             break;
+	case GETDNS_TRANSPORT_HTTPS:
+#ifndef HAVE_LIBNGHTTP2	
+            return GETDNS_RETURN_CONTEXT_UPDATE_FAIL;
+#endif
+	    set_ub_string_opt(context, "do-udp:", "no");
+            set_ub_string_opt(context, "do-tcp:", "yes");
+	    set_ub_string_opt(context, "https-upstream:", "yes");
+	    break;
        default:
            return GETDNS_RETURN_CONTEXT_UPDATE_FAIL;
         }
@@ -2244,13 +2257,13 @@ getdns_context_set_dns_transport(
 {
 	size_t count = 2;
 	getdns_transport_list_t *new_transports;
-
 	RETURN_IF_NULL(context, GETDNS_RETURN_INVALID_PARAMETER);
 
 	if (value == GETDNS_TRANSPORT_UDP_ONLY ||
 	    value == GETDNS_TRANSPORT_TCP_ONLY ||
 	    value == GETDNS_TRANSPORT_TCP_ONLY_KEEP_CONNECTIONS_OPEN ||
-	    value == GETDNS_TRANSPORT_TLS_ONLY_KEEP_CONNECTIONS_OPEN)
+	    value == GETDNS_TRANSPORT_TLS_ONLY_KEEP_CONNECTIONS_OPEN ||
+	    value == GETDNS_TRANSPORT_HTTPS_ONLY)
 	    count = 1;
 
 	if (!(new_transports = GETDNS_XMALLOC(
@@ -2282,6 +2295,9 @@ getdns_context_set_dns_transport(
 	        context->dns_transports[0] = GETDNS_TRANSPORT_TLS;
 	        context->dns_transports[1] = GETDNS_TRANSPORT_TCP;
 	       break;
+	    case GETDNS_TRANSPORT_HTTPS_ONLY:
+		context->dns_transports[0] = GETDNS_TRANSPORT_HTTPS;
+		break;
 	   default:
 	       return GETDNS_RETURN_CONTEXT_UPDATE_FAIL;
 	}

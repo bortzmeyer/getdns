@@ -821,6 +821,39 @@ else
 	fi
 fi
 
+my_with_libnghttp2=1
+AC_ARG_WITH(libnghttp2, AS_HELP_STRING([--with-libnghttp2=pathname],
+	[path to libnghttp2 (default: search /usr/local ..)]),
+	[], [withval="yes"])
+if test x_$withval = x_yes; then
+	for dir in /usr/local /opt/local /usr/pkg /usr/sfw; do
+		if test -f "$dir/include/nghttp2.h"; then
+			CFLAGS="$CFLAGS -I$dir/include"
+			LDFLAGS="$LDFLAGS -L$dir/lib"
+			AC_MSG_NOTICE([Found libnghttp2 in $dir])
+			break
+		fi
+		if test -f "$dir/include/nghttp2/nghttp2.h"; then
+			CFLAGS="$CFLAGS -I$dir/include/nghttp2"
+			LDFLAGS="$LDFLAGS -L$dir/lib"
+			AC_MSG_NOTICE([Found libnghttp2 in $dir])
+			break
+		fi
+	done
+	if test -f "/usr/include/nghttp2/nghttp2.h"; then
+		CFLAGS="$CFLAGS -I/usr/include/nghttp2"
+		#LDFLAGS="$LDFLAGS -L/usr/lib"
+		AC_MSG_NOTICE([Found libnghttp2 in /usr])
+	fi
+else
+	if test x_$withval != x_no; then
+		CFLAGS="$CFLAGS -I$withval/include"
+		LDFLAGS="$LDFLAGS -L$withval/lib"
+	else
+		my_with_libnghttp2=0
+	fi
+fi
+
 if test $my_with_libunbound = 1
 then
 	# find libunbound
@@ -881,6 +914,20 @@ then
 			found_all_libs=0
 		fi
 	fi
+fi
+
+working_libnghttp2=0
+if test $my_with_libnghttp2 = 1
+then
+	AC_MSG_NOTICE([Checking for dependency libnghttp2])
+	AC_CHECK_LIB([nghttp2], [create_http2_session_data], [
+		working_libnghttp2=1
+		LIBS="-lnghttp2 $LIBS"
+		AC_DEFINE_UNQUOTED([HAVE_LIBNGHTTP2], [1], [Define to 1 if you have the `nghttp2' library (-lnghttp2).]) dnl `
+	], [
+		MISSING_DEPS="${MISSING_DEPS}${MISSING_SEP}libnghttp2"
+		MISSING_SEP=", "
+	])
 fi
 
 AC_ARG_ENABLE(unbound-event-api, AC_HELP_STRING([--disable-unbound-event-api], [Disable usage of libunbounds event API]))

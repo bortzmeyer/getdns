@@ -155,8 +155,11 @@ fill_transport_list(char *transport_list_str,
 			case 'L': 
 				transports[i] = GETDNS_TRANSPORT_TLS;
 				break;
+			case 'H': 
+				transports[i] = GETDNS_TRANSPORT_HTTPS;
+				break;
 			default:
-				fprintf(stderr, "Unrecognised transport '%c' in string %s\n", 
+ 				fprintf(stderr, "Unrecognised transport '%c' in string %s\n", 
 				       *(transport_list_str + i), transport_list_str);
 				return GETDNS_RETURN_GENERIC_ERROR;
 		}
@@ -265,7 +268,7 @@ print_usage(FILE *out, const char *progname)
 	fprintf(out, "\t-u\tSet transport to UDP with TCP fallback (default)\n");
 	fprintf(out, "\t-U\tSet transport to UDP only\n");
 	fprintf(out, "\t-l <transports>\tSet transport list. List can contain 1 of each of the characters\n");
-	fprintf(out, "\t\t\t U T L for UDP, TCP or TLS e.g 'UT' or 'LTU' \n");
+	fprintf(out, "\t\t\t U T L H for UDP, TCP, TLS or HTTPS e.g 'UT' or 'LTU' \n");
 	fprintf(out, "\t-z <listen address>\n");
 	fprintf(out, "\t\tListen for DNS requests on the given IP address\n");
 	fprintf(out, "\t\t<listen address> is in the same format as upstreams.\n");

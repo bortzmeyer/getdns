@@ -1977,10 +1977,12 @@ upstream_valid(getdns_upstream *upstream,
 	   a 'good' connection state. backoff_ok is usefull when no upstreams at all
 	   are valid, for example when the network connection is down and need to 
 	   keep trying to connect before failing completely. */
+	fprintf(stderr, "MYDEBUG usable %d\n", upstream_usable(upstream, backoff_ok));
 	if (!(upstream->transport == transport && upstream_usable(upstream, backoff_ok)))
 		return 0;
 	if (transport == GETDNS_TRANSPORT_TCP)
 		return 1;
+	fprintf(stderr, "MYDEBUG conn %d\n", upstream->conn_state );
 	if (upstream->conn_state == GETDNS_CONN_OPEN) {
 		if (!upstream_auth_status_ok(upstream, netreq))
 			return 0;
@@ -2076,9 +2078,9 @@ upstream_select_stateful(getdns_network_req *netreq, getdns_transport_list_t tra
 	   upstreams we may have no valid upstream at all (in contrast to UDP).*/
 	i = upstreams->current_stateful;
 	do {
-		DEBUG_STUB("%s %-35s: Testing upstreams  %d %d for transport %d \n",
-	            STUB_DEBUG_SETUP, __FUNC__, (int)i,
-	            (int)upstreams->upstreams[i].conn_state, transport);
+		DEBUG_STUB("%s %-35s: Testing upstreams %s %d %d for transport %d \n",
+			   STUB_DEBUG_SETUP, __FUNC__, upstreams->upstreams[i].addr_str, (int)i,
+			   (int)upstreams->upstreams[i].conn_state, transport);
 		if (upstream_valid(&upstreams->upstreams[i], transport, netreq, 0)) {
 			upstream = &upstreams->upstreams[i];
 			break;
@@ -2233,6 +2235,9 @@ upstream_connect(getdns_upstream *upstream, getdns_transport_list_t transport,
 		    "%-40s : Conn opened: %s - %s Profile\n", 
 		    upstream->addr_str, transport == GETDNS_TRANSPORT_TLS ? "TLS":"TCP",
 		dnsreq->context->tls_auth_min == GETDNS_AUTHENTICATION_NONE ? "Opportunistic":"Strict");
+		break;
+	case GETDNS_TRANSPORT_HTTPS:
+		fprintf(stderr, "MYDEBUG Houston, we must connect with HTTPS\n");
 		break;
 	default:
 		return -1;
